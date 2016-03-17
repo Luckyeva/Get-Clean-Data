@@ -20,32 +20,16 @@ subject_test <- read.table(filepath)
 filepath = "/Users/lucky1eva/Downloads/UCI HAR Dataset/features.txt"
 labels <- read.table(filepath)
 
-# Merges the training and the test sets to create one data set
-# Uses descriptive activity names to name the activities in the data set; 
-# Appropriately labels the data set with descriptive variable names.
-
-## Add feature lables to all measurements from main dataframes
+## Get the variable names from the lables 
 colnames(rawdata_test) <- lables[, 2]
 colnames(rawdata_train) <- lables[, 2]
 
-## Create activity names to the y_test and y_train activity ID table
-attach(rawdata_test_y)
-rawdata_test_y$V2 <- ifelse(V1 == "1", "WALKING", ifelse(V1 == "2", "WALKING_UPSTAIRS", 
-                                                         ifelse(V1 == "3", "WALKING_DOWNSTAIRS", 
-                                                                ifelse(V1 == "4", "SITTING", ifelse(V1 == "5", "STANDING", "LAYING")))) )
-detach(rawdata_test_y)
-attach(rawdata_train_y)
-rawdata_train_y$V2 <- ifelse(V1 == "1", "WALKING", ifelse(V1 == "2", "WALKING_UPSTAIRS", 
-                                                         ifelse(V1 == "3", "WALKING_DOWNSTAIRS", 
-                                                                ifelse(V1 == "4", "SITTING", ifelse(V1 == "5", "STANDING", "LAYING")))) )
-detach(rawdata_train_y)
-
-## Create new variables with lables
-newnames <- c("User_ID", "Activity_ID", "Activity_Names")
+## Create 2 columns for subject and activity ID numbers with descrptive names
+newnames <- c("User_ID", "Activity_ID")
 
 test_id <- cbind(subject_test, rawdata_test_y)
 train_id <- cbind(subject_train, rawdata_train_y)
-fullset_id <- rbind( train_id, test_id)
+fullset_id <- rbind(train_id, test_id)
 
 names(fullset_id) <- newnames
 
@@ -53,52 +37,41 @@ names(fullset_id) <- newnames
 fullset <- rbind(rawdata_train, rawdata_test)
 fullset <- cbind(fullset_id, fullset)
 
-# Extracts only the measurements on the mean and standard deviation for each measurement.
-
+## Extracts only the measurements on the mean and standard deviation for each measurement.
 sub_id <- grep (("mean|std") , names(fullset)) # select variable with either "mean" or "std" in the names
 
 fullset_sub <- fullset[, sub_id]
 
+## bind ID table with data table
 fullset2 <- cbind(fullset_id, fullset_sub)
 
-# STEP 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+## To calculate mean for each subject by each activity, use aggregate()
+## function and a for_loop to compute the mean value for each variable.
 
-## Use tapply() and for loop to create the seperate clean data set by Subject or Activity
-x <- NULL
+tb <- aggregate(fullset2[, 3] ~ User_ID + Activity_ID, data = fullset2, FUN = "mean" )
+names(tb)[3] <- colnames(fullset2)[3]
+
 for (i in 4:length(fullset2)) {
-        avg <- tapply(fullset2[, i], fullset2$User_ID, mean)
-        x <- cbind(x, as.vector(avg))
+        tb.x <- aggregate(fullset2[, i] ~ User_ID + Activity_ID, data = fullset2, FUN = "mean" )
+        tb <- cbind(tb, tb.x[, 3])
+        names(tb)[length(tb)] <- colnames(fullset2)[i]
 }
 
-bySubject <- data.frame(x)
-colnames(bySubject) <- names(fullset_sub)
-ID <- data.frame( "ID" = as.factor(c(1:30)))
-Table_subject <- cbind(ID, bySubject)
+## Create new variable to store Activity_Name based on the Activity_ID
+attach(tb)
+tb$Activity_Name <- ifelse(Activity_ID == "1", "WALKING", 
+                           ifelse(Activity_ID == "2", "WALKING_UPSTAIRS", 
+                                ifelse(Activity_ID == "3", "WALKING_DOWNSTAIRS", 
+                                        ifelse(Activity_ID == "4", "SITTING", 
+                                                ifelse(Activity_ID == "5", "STANDING", "LAYING")))) )
+detach(tb)
 
-
-y <- NULL
-for (i in 4:length(fullset2)) {
-        avg <- tapply(fullset2[, i], fullset2$Activity_ID, mean)
-        y <- cbind(y, as.vector(avg))
-}
-
-byActivity <- data.frame(y)
-colnames(byActivity) <- names(fullset_sub)
-ID <- data.frame( "ID" = c("WALKING", "WALKING_UPSTAIRS",
-                                     "WALKING_DOWNSTAIRS",
-                                     "SITTING",
-                                     "STANDING",
-                                     "LAYING"))
-
-## Combine the two new dataset into one tidy data set
-
-Table_activity <- cbind(ID, byActivity)
-
-Tidyset <- rbind(Table_activity,Table_subject)
+## Rearrange the order for Activity_Name column
+tb <- tb[, c(1,2, length(tb), 3:(length(tb)-1) )]
 
 ## Write the table into a text file 
 setwd("/Users/lucky1eva/Downloads/")
-write.table(Tidyset, file = "tidyset.txt", row.names = FALSE)
+write.table(tb, file = "tidydata.txt", row.names = FALSE)
 
 
 
