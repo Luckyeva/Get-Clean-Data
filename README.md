@@ -1,5 +1,5 @@
-# Get-Clean-Data
-Coursera project submission by Eva Li
+# Getting and Cleaning Data Project Submission
+ by Eva Li
 
 ## Introduction
 
