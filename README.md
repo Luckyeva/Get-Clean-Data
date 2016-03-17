@@ -23,14 +23,15 @@ You should create one R script called run_analysis.R that does the following.
 
 ## How it works
 
-1. reading text files into data frames from downloaded file
-2. adding feature lables as column names to all measurements in both the training and text data sets
-2. creating a new variable to store Activity_Names based on the Activity ID in y_train.txt and y_test.txt data sets
-3. createing a long data frame "fullset_id" with subject ID, Activity ID, and Activity Names for the training dataset appended with that of the text data set. 
-4. creating the full data set named "fullset" by adding the merged training and test data sets with descriptive feature names to the fullset_id data frame created in step 3.
-5. taking table "fullset" and xtracting only the measurements on the mean and standard deviation for each measurement by applying grep() function to subset by variable which contains either "mean" or "std" in its variable name; 
-6. combining the extracted features with the table that contains Subject ID, Activity ID, and Activity Names. Give it the name "fullset2".
-7. Finally, creating the new tidy data set to show the average of all measurements by subject and activity using tapply() function and For loop.
+#### Get the variable names from the lables file
+#### Create a long table of 2 columns for subject and activity ID with descrptive names
+#### Merge test and training datasets into one table
+#### Extracts only the measurements on the mean and standard deviation for each measurement with grep() function.
+#### Bind ID table with data table and name it properly
+#### To calculate mean for each subject by each activity, use aggregate() function and a for_loop to compute the mean value for each variable. Save it in data frame "tb"
+#### Create new variable to store Activity_Name based on the Activity_ID using ifelse() function
+#### Rearrange the order for Activity_Name column
+#### Write the table into a text file 
 
 ## Information on the feasures selected
 
